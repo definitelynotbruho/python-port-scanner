@@ -1,8 +1,7 @@
 import socket
+import argparse
 
-def with_user_input():
-    ip = input("Input IP: ")
-    port = int(input("Input the port: "))
+def with_user_input(ip, port):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(1)
@@ -14,9 +13,7 @@ def with_user_input():
         print("Port is closed")
     s.close()
 
-def with_range():
-    ip = input("Input IP")
-    downrange, uprange = map(int, input("Input a range: ").split())
+def with_range(ip, downrange, uprange):
     for i in range(downrange, uprange + 1):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)
@@ -28,14 +25,20 @@ def with_range():
         s.close()
 
 def main():
-    ans = int(input("Select a mode of port scanner: Single (1) or Range (2): \n"))
-    if ans == 1:
-        with_user_input()
-    elif ans == 2:
-        with_range()
-    else:
-        print("Unkown command!")
+    parser = argparse.ArgumentParser(description='Simple portscanner')
+    parser.add_argument('ip', help='IP-address')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-p', '--port', type=int, help='Single port')
+    group.add_argument('-r', '--range', help='Range of ports (For example: 20 100)')
+
+    args = parser.parse_args()
+
+    if args.port:
+        with_user_input(args.ip, args.port)
+    elif args.range:
+        down, up = map(int, args.range.split('-'))
+        with_range(args.ip, down, up)
 
 if __name__ == "__main__":
     main()
-
