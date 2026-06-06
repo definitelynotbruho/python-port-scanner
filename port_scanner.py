@@ -1,5 +1,6 @@
 import socket
 import argparse
+import threading
 
 def with_user_input(ip, port):
 
@@ -8,21 +9,21 @@ def with_user_input(ip, port):
 
     try:
         s.connect((ip, port))
-        print("Port is opened")
+        print(f"{port} port is opened")
     except:
-        print("Port is closed")
+        print(f"{port} port is closed")
     s.close()
 
 def with_range(ip, downrange, uprange):
+    threads = []
+
     for i in range(downrange, uprange + 1):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        try:
-            s.connect((ip, i))
-            print(f"Port {i} is opened")
-        except:
-            print(f"Port {i} is closed")
-        s.close()
+        t = threading.Thread(target=with_user_input, args=(ip, i))
+        t.start()      
+        threads.append(t) 
+
+    for t in threads:
+        t.join()
 
 def main():
     parser = argparse.ArgumentParser(description='Simple portscanner')
@@ -40,5 +41,4 @@ def main():
         down, up = map(int, args.range.split('-'))
         with_range(args.ip, down, up)
 
-if __name__ == "__main__":
-    main()
+main()
